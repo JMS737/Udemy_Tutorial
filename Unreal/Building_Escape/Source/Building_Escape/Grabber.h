@@ -38,6 +38,7 @@ private:
 
 	void FindPhysicsHandle();
 	void SetupInputComponent();
+	void UpdatePhysicsHandle();
 	FHitResult GetFirstPhysicsBodyInReach() const;
 	FVector GetGrabTarget() const;
 };

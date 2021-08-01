@@ -48,67 +48,31 @@ void UGrabber::SetupInputComponent()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+	UpdatePhysicsHandle();
+}
+
+void UGrabber::UpdatePhysicsHandle()
+{
 	if (PhysicsHandle->GrabbedComponent)
 	{
-		FVector LineTraceEnd = GetGrabTarget();
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		PhysicsHandle->SetTargetLocation(GetGrabTarget());
 	}
 }
 
 void UGrabber::Grab()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Grab pressed..."));
-
-	FVector LineTraceEnd = GetGrabTarget();
-
 	FHitResult Hit = GetFirstPhysicsBodyInReach();
 
-	AActor* ActorHit = Hit.GetActor();
-	if (ActorHit)
+	// If the hit was successful.
+	if (Hit.GetActor())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *ActorHit->GetName());
-		UPrimitiveComponent* ComponentToGrab = Hit.GetComponent();
-		PhysicsHandle->GrabComponentAtLocation(ComponentToGrab, NAME_None, LineTraceEnd);
+		PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent(), NAME_None, GetGrabTarget());
 	}
 }
 
 void UGrabber::Release()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Grab released..."));
 	PhysicsHandle->ReleaseComponent();
-}
-
-FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
-{	
-	FVector LineTraceEnd = GetGrabTarget();
-
-	FVector Location;
-	FRotator Rotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
-
-	// Gizmo equivalent in Unity
-	// DrawDebugLine(
-	// 	GetWorld(),
-	// 	Location,
-	// 	LineTraceEnd,
-	// 	FColor(0, 255, 0),
-	// 	false,
-	// 	0.f,
-	// 	0,
-	// 	5.f);
-
-	FHitResult Hit;
-	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-	GetWorld()->LineTraceSingleByObjectType(
-		OUT Hit,
-		Location,
-		LineTraceEnd,
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
-		TraceParams
-	);
-
-	return Hit;
 }
 
 FVector UGrabber::GetGrabTarget() const
@@ -117,7 +81,24 @@ FVector UGrabber::GetGrabTarget() const
 	FRotator Rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
 
-	FVector LineTraceEnd = Location + Rotation.Vector() * Reach;
+	return Location + Rotation.Vector() * Reach;
+}
 
-	return LineTraceEnd;
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
+{	
+	FVector Location;
+	FRotator Rotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
+
+	FHitResult Hit;
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT Hit,
+		Location,
+		GetGrabTarget(),
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParams
+	);
+
+	return Hit;
 }
