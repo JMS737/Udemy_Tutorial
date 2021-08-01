@@ -53,7 +53,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 void UGrabber::UpdatePhysicsHandle()
 {
-	if (PhysicsHandle->GrabbedComponent)
+	if (PhysicsHandle && PhysicsHandle->GrabbedComponent)
 	{
 		PhysicsHandle->SetTargetLocation(GetGrabTarget());
 	}
@@ -64,7 +64,7 @@ void UGrabber::Grab()
 	FHitResult Hit = GetFirstPhysicsBodyInReach();
 
 	// If the hit was successful.
-	if (Hit.GetActor())
+	if (Hit.GetActor() && PhysicsHandle)
 	{
 		PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent(), NAME_None, GetGrabTarget());
 	}
@@ -72,7 +72,10 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
-	PhysicsHandle->ReleaseComponent();
+	if (PhysicsHandle)
+	{
+		PhysicsHandle->ReleaseComponent();
+	}
 }
 
 FVector UGrabber::GetGrabTarget() const
@@ -85,7 +88,7 @@ FVector UGrabber::GetGrabTarget() const
 }
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
-{	
+{
 	FVector Location;
 	FRotator Rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
@@ -97,8 +100,7 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 		Location,
 		GetGrabTarget(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
-		TraceParams
-	);
+		TraceParams);
 
 	return Hit;
 }

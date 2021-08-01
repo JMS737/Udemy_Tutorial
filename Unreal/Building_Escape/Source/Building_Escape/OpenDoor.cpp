@@ -32,8 +32,6 @@ void UOpenDoor::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' is missing a PressurePlate on the OpenDoor component"), *GetOwner()->GetName());
 	}
-
-	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 // Called every frame
@@ -75,10 +73,15 @@ float UOpenDoor::TotalMassOfActors() const
 {
 	float TotalMass = 0.f;
 
-	TArray<AActor*> OverlappingActors;
+	if (!PressurePlate)
+	{
+		return TotalMass;
+	}
+
+	TArray<AActor *> OverlappingActors;
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
-	for (AActor* Actor : OverlappingActors)
+	for (AActor *Actor : OverlappingActors)
 	{
 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
 	}
