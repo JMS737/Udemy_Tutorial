@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/AudioComponent.h"
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
@@ -31,6 +32,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume *PressurePlate = nullptr;
 
+	UPROPERTY() // Should be included on all components (classes beginning with U) so that Unreal can clean up components properly.
+	UAudioComponent* Audio = nullptr;
+
 	UPROPERTY(EditAnywhere)
 	float RequiredMass = 50.f;
 
@@ -49,6 +53,10 @@ private:
 	float InitialYaw;
 	float CurrentYaw;
 	float LastOpened = 0.f;
+	bool AudioTriggeredOpen = false;
+	bool AudioTriggeredClose = true;
 
 	void SetDoorRotation(float angle);
+	void FindPressurePlate();
+	void FindAudioComponent();
 };
